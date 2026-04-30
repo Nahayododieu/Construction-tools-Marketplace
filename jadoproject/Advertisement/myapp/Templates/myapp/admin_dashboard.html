@@ -1,0 +1,84 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Admin Panel | BuildMart{% endblock %}
+
+{% block content %}
+<style>
+    .admin-shell { display: grid; gap: 22px; }
+    .hero, .panel, .stat-card { background: rgba(255, 250, 243, 0.94); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 24px; box-shadow: 0 22px 44px rgba(49, 35, 18, 0.08); }
+    .hero, .panel { padding: 24px; }
+    .hero h1 { font-size: clamp(2rem, 3vw, 3rem); color: #23211d; margin-bottom: 10px; }
+    .hero p, .stat-label, .activity-meta { font-family: "Segoe UI", Tahoma, sans-serif; color: #665d52; }
+    .stats-grid, .quick-grid, .two-col { display: grid; gap: 18px; }
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .stat-card { padding: 18px; text-align: center; }
+    .stat-number { display: block; font-size: 2rem; font-weight: 700; color: #23211d; }
+    .quick-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .quick-grid a { text-decoration: none; color: inherit; }
+    .two-col { grid-template-columns: 1.2fr 1fr; }
+    .list-item { display: flex; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid rgba(67, 49, 22, 0.10); }
+    .list-item:last-child { border-bottom: 0; }
+    .activity-title { font-weight: 700; color: #23211d; margin-bottom: 4px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+
+<section class="admin-shell">
+    <div class="hero">
+        <h1>BuildMart Admin Panel</h1>
+        <p>Manage construction products, customer accounts, and store activity from one place. Staff users can add, edit, and delete products, while Django admin remains available for deeper database management.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><span class="stat-number">{{ total_ads }}</span><span class="stat-label">Products</span></div>
+        <div class="stat-card"><span class="stat-number">{{ active_ads }}</span><span class="stat-label">Active Products</span></div>
+        <div class="stat-card"><span class="stat-number">{{ total_users }}</span><span class="stat-label">User Accounts</span></div>
+        <div class="stat-card"><span class="stat-number">{{ customer_accounts }}</span><span class="stat-label">Customers</span></div>
+        <div class="stat-card"><span class="stat-number">{{ total_orders }}</span><span class="stat-label">Orders</span></div>
+        <div class="stat-card"><span class="stat-number">{{ categories_count }}</span><span class="stat-label">Categories</span></div>
+    </div>
+
+    <div class="panel">
+        <h2 style="margin-bottom:16px;">Quick Actions</h2>
+        <div class="quick-grid">
+            <a class="btn" href="{% url 'advertisement-create' %}">Add New Product</a>
+            <a class="btn" href="{% url 'admin-ads' %}">Manage Products</a>
+            <a class="btn" href="{% url 'admin-users' %}">Manage Users</a>
+            <a class="btn" href="{% url 'user-signups' %}">View Customers</a>
+            <a class="btn" href="{% url 'advertisement-list' %}">Open Storefront</a>
+            <a class="btn" href="/admin/">Open Django Admin</a>
+        </div>
+    </div>
+
+    <div class="two-col">
+        <div class="panel">
+            <h2 style="margin-bottom:16px;">Recent Products</h2>
+            {% for ad in recent_ads %}
+                <div class="list-item">
+                    <div>
+                        <div class="activity-title">{{ ad.title }}</div>
+                        <div class="activity-meta">{{ ad.category.name|default:"Construction Material" }} • {{ ad.user.username }} • {{ ad.get_status_display }}</div>
+                    </div>
+                    <strong>${{ ad.price }}</strong>
+                </div>
+            {% empty %}
+                <p class="activity-meta">No products have been added yet.</p>
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-bottom:16px;">Recent Orders</h2>
+            {% for order in recent_orders %}
+                <div class="list-item">
+                    <div>
+                        <div class="activity-title">{{ order.advertisement.title }}</div>
+                        <div class="activity-meta">{{ order.user.username }} • Qty {{ order.quantity }} • {{ order.get_status_display }}</div>
+                    </div>
+                    <strong>{{ order.created_at|date:"M d" }}</strong>
+                </div>
+            {% empty %}
+                <p class="activity-meta">No orders have been placed yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

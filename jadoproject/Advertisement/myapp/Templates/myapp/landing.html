@@ -1,0 +1,254 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}BuildMart | Construction Materials{% endblock %}
+
+{% block content %}
+<section class="hero-panel">
+    <div class="hero-copy">
+        <span class="eyebrow">Wholesale supplies for every build stage</span>
+        <h1>Order trusted construction materials online with a storefront built for builders.</h1>
+        <p>
+            BuildMart helps customers browse cement, roofing sheets, steel, tiles, plumbing fittings, and finishing materials in one clean online store.
+            Customers can create accounts, log in, and add what they need to a shopping cart while staff manage the catalog from the admin panel.
+        </p>
+
+        <div class="hero-actions">
+            <a href="{% url 'product-list' %}" class="btn">View Products</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'cart' %}" class="btn hero-secondary">View Cart</a>
+            {% else %}
+                <a href="{% url 'signup' %}" class="btn hero-secondary">Create Account</a>
+            {% endif %}
+        </div>
+
+        <div class="hero-metrics">
+            <div class="metric-card">
+                <strong>{{ hero_stats.products }}</strong>
+                <span>Active materials</span>
+            </div>
+            <div class="metric-card">
+                <strong>{{ hero_stats.categories }}</strong>
+                <span>Shop categories</span>
+            </div>
+            <div class="metric-card">
+                <strong>{{ hero_stats.cities }}</strong>
+                <span>Delivery locations</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-showcase">
+        <div class="showcase-badge">New season stock</div>
+        <div class="showcase-card">
+            <span class="showcase-label">BuildMart Prototype</span>
+            <h2>Materials for housing, commercial fit-outs, and site finishing.</h2>
+            <p>The prototype now focuses on the required online-store journey instead of unrelated social features.</p>
+
+            <div class="showcase-list">
+                <span>Cement and blocks</span>
+                <span>Floor and wall finishes</span>
+                <span>Roofing systems</span>
+                <span>Plumbing hardware</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="section-head">
+        <div>
+            <p class="section-kicker">Browse by use case</p>
+            <h2>Product Categories</h2>
+        </div>
+        <a href="{% url 'category-list' %}">View all</a>
+    </div>
+
+    <div class="category-grid">
+        {% for category in category_cards %}
+            <article class="category-card">
+                <div class="category-image" style="background-image: linear-gradient(180deg, rgba(27, 25, 21, 0.08), rgba(27, 25, 21, 0.36)), url('{{ category.image }}');"></div>
+                <div class="category-body">
+                    <span class="category-accent">{{ category.accent }}</span>
+                    <h3>{{ category.name }}</h3>
+                    <p>{{ category.description }}</p>
+                    <div class="category-meta">
+                        <span>{{ category.count }} products</span>
+                        <span>Ready to source</span>
+                    </div>
+                    {% if category.id %}
+                        <a class="category-action" href="{% url 'product-list' %}?category={{ category.id }}">View Products</a>
+                    {% else %}
+                        <a class="category-action" href="{% url 'product-list' %}">View Products</a>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="section-block">
+    <div class="section-head">
+        <div>
+            <p class="section-kicker">Featured catalog</p>
+            <h2>Recommended Products</h2>
+        </div>
+        <a href="{% url 'product-list' %}">View all</a>
+    </div>
+
+    <div class="product-grid">
+        {% for ad in recommended_ads %}
+            <article class="product-card">
+                <div class="product-media">
+                    {% if ad.image %}
+                        <img src="{{ ad.image.url }}" alt="{{ ad.title }}">
+                    {% else %}
+                        <div class="media-fallback">No image</div>
+                    {% endif %}
+                    <div class="product-flags">
+                        <span class="sale-flag">Ready Stock</span>
+                        <span class="best-flag">{{ ad.badge }}</span>
+                    </div>
+                </div>
+                <div class="product-body">
+                    <p class="product-category">{{ ad.category.name|default:"Construction Supply" }}</p>
+                    <h3>{{ ad.title }}</h3>
+                    <p class="product-city">{{ ad.city }}</p>
+                    <div class="product-footer">
+                        <strong>${{ ad.price }}</strong>
+                        <a class="product-link-button" href="{% url 'product-detail' ad.slug %}">View Product</a>
+                    </div>
+                </div>
+            </article>
+        {% empty %}
+            <div class="empty-state">
+                <h3>No products yet</h3>
+                <p>Add active construction products and they will appear here automatically.</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="dual-strip">
+    <div class="info-panel">
+        <p class="section-kicker">Prototype requirements</p>
+        <h2>Built around the exact pages a product-based website needs.</h2>
+        <p>
+            The store now focuses on the required customer journey: home page, registration, login, product list, product details,
+            cart, and a staff-only admin area for product and user management.
+        </p>
+    </div>
+
+    <div class="latest-panel">
+        <div class="section-head compact">
+            <div>
+                <p class="section-kicker">Fresh listings</p>
+                <h2>Latest Arrivals</h2>
+            </div>
+        </div>
+
+        <div class="latest-list">
+            {% for ad in latest_ads %}
+                <a class="latest-item" href="{% url 'product-detail' ad.slug %}">
+                    <div>
+                        <strong>{{ ad.title }}</strong>
+                        <p>{{ ad.category.name|default:"Construction Supply" }} in {{ ad.city }}</p>
+                    </div>
+                    <span>${{ ad.price }}</span>
+                </a>
+            {% empty %}
+                <p class="empty-inline">Latest products will show here once active listings are available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<a class="whatsapp-float" href="https://wa.me/250791861208?text=Hello%20BuildMart%2C%20I%20would%20like%20help%20with%20your%20construction%20materials." target="_blank" rel="noopener noreferrer" aria-label="Chat with BuildMart on WhatsApp">
+    <span class="whatsapp-icon">W</span>
+    <span class="whatsapp-text">Chat with us</span>
+</a>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-panel { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 26px; margin-bottom: 34px; }
+    .hero-copy, .hero-showcase, .section-block, .info-panel, .latest-panel { background: rgba(255, 250, 243, 0.88); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 28px; box-shadow: 0 22px 50px rgba(49, 35, 18, 0.08); }
+    .hero-copy { padding: 34px; position: relative; overflow: hidden; }
+    .eyebrow, .section-kicker, .showcase-label, .category-accent { font-family: "Segoe UI", Tahoma, sans-serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.74rem; color: #a76027; font-weight: 700; }
+    .hero-copy h1 { font-size: clamp(2.6rem, 4vw, 4.4rem); line-height: 0.95; max-width: 11ch; margin: 16px 0 18px; color: #23211d; }
+    .hero-copy p, .info-panel p, .showcase-card p, .category-body p, .product-city, .latest-item p { font-family: "Segoe UI", Tahoma, sans-serif; color: #665d52; line-height: 1.65; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; margin: 24px 0 28px; }
+    .hero-secondary { background: #2e3a31; }
+    .hero-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .metric-card { padding: 18px; border-radius: 20px; background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(244, 232, 218, 0.82)); border: 1px solid rgba(67, 49, 22, 0.08); }
+    .metric-card strong { display: block; font-size: 1.7rem; color: #23211d; }
+    .metric-card span { font-family: "Segoe UI", Tahoma, sans-serif; color: #6e6558; font-size: 0.92rem; }
+    .hero-showcase { padding: 18px; background: linear-gradient(180deg, rgba(44, 43, 38, 0.18), rgba(44, 43, 38, 0.68)), url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80') center/cover; min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+    .showcase-badge { align-self: flex-start; padding: 9px 14px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); color: #fff; font-family: "Segoe UI", Tahoma, sans-serif; }
+    .showcase-card { padding: 26px; border-radius: 24px; background: rgba(255, 248, 240, 0.92); }
+    .showcase-card h2, .section-head h2, .info-panel h2, .latest-panel h2 { font-size: 2rem; line-height: 1.05; color: #23211d; margin-top: 10px; }
+    .showcase-list { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; font-family: "Segoe UI", Tahoma, sans-serif; }
+    .showcase-list span { padding: 9px 12px; border-radius: 999px; background: #f3e0cb; color: #694628; font-weight: 600; font-size: 0.88rem; }
+    .section-block { padding: 28px; margin-bottom: 28px; }
+    .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+    .section-head a { font-family: "Segoe UI", Tahoma, sans-serif; color: #6d4c2d; text-decoration: none; font-weight: 600; }
+    .section-head.compact { margin-bottom: 16px; }
+    .category-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+    .category-card { overflow: hidden; border-radius: 22px; background: #fff; border: 1px solid rgba(67, 49, 22, 0.08); }
+    .category-image { height: 220px; background-size: cover; background-position: center; }
+    .category-body { padding: 18px; }
+    .category-body h3 { font-size: 1.5rem; margin: 8px 0 10px; color: #23211d; }
+    .category-meta { margin-top: 14px; display: flex; justify-content: space-between; gap: 10px; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 0.88rem; color: #7b7368; }
+    .category-action { display: inline-flex; align-items: center; justify-content: center; margin-top: 16px; padding: 10px 16px; border-radius: 999px; background: #6d4c2d; color: #fff; text-decoration: none; font-family: "Segoe UI", Tahoma, sans-serif; font-weight: 700; }
+    .product-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+    .product-card { border-radius: 22px; overflow: hidden; background: #fff; border: 1px solid rgba(67, 49, 22, 0.08); box-shadow: 0 16px 34px rgba(49, 35, 18, 0.06); }
+    .product-media { position: relative; height: 230px; background: linear-gradient(180deg, #f0e7d9, #e5d9c7); }
+    .product-media img, .media-fallback { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .media-fallback { display: flex; align-items: center; justify-content: center; font-family: "Segoe UI", Tahoma, sans-serif; color: #7f7467; }
+    .product-flags { position: absolute; top: 14px; left: 14px; right: 14px; display: flex; justify-content: space-between; gap: 10px; font-family: "Segoe UI", Tahoma, sans-serif; font-weight: 700; font-size: 0.76rem; text-transform: uppercase; }
+    .sale-flag, .best-flag { padding: 7px 10px; border-radius: 999px; background: #fff; }
+    .product-body { padding: 18px; }
+    .product-category { font-family: "Segoe UI", Tahoma, sans-serif; text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.74rem; color: #9c6640; font-weight: 700; }
+    .product-body h3 { font-size: 1.35rem; margin: 8px 0 6px; color: #23211d; }
+    .product-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; font-family: "Segoe UI", Tahoma, sans-serif; }
+    .product-footer strong { font-size: 1.18rem; color: #23211d; }
+    .product-link-button { display: inline-flex; align-items: center; justify-content: center; padding: 10px 14px; border-radius: 999px; background: #2e3a31; color: #fff; text-decoration: none; font-weight: 700; }
+    .dual-strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 0.9fr); gap: 24px; }
+    .info-panel, .latest-panel { padding: 28px; }
+    .latest-list { display: grid; gap: 12px; }
+    .latest-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border-radius: 18px; background: #fff; border: 1px solid rgba(67, 49, 22, 0.08); text-decoration: none; }
+    .latest-item strong { display: block; color: #23211d; margin-bottom: 4px; }
+    .latest-item span { font-family: "Segoe UI", Tahoma, sans-serif; font-weight: 700; color: #6d4c2d; white-space: nowrap; }
+    .empty-state, .empty-inline { font-family: "Segoe UI", Tahoma, sans-serif; color: #6e6558; }
+    .empty-state { padding: 24px; border-radius: 18px; background: #fff; border: 1px dashed rgba(67, 49, 22, 0.18); grid-column: 1 / -1; }
+    .whatsapp-float {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 40;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 18px;
+        border-radius: 999px;
+        background: #1fa855;
+        color: #fff;
+        text-decoration: none;
+        box-shadow: 0 16px 32px rgba(31, 168, 85, 0.28);
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        font-weight: 700;
+    }
+    .whatsapp-icon {
+        width: 34px;
+        height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 1rem;
+    }
+    .whatsapp-text { white-space: nowrap; }
+    @media (max-width: 1100px) { .hero-panel, .dual-strip, .category-grid, .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hero-panel, .dual-strip { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .hero-copy, .hero-showcase, .section-block, .info-panel, .latest-panel { padding: 20px; } .hero-copy h1 { max-width: none; font-size: 2.3rem; } .hero-metrics, .category-grid, .product-grid { grid-template-columns: 1fr; } .section-head, .product-footer, .latest-item { align-items: flex-start; flex-direction: column; } .whatsapp-float { right: 16px; bottom: 16px; padding: 12px 14px; } .whatsapp-text { display: none; } }
+</style>
+{% endblock %}

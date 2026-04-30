@@ -1,0 +1,169 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}{{ advertisement.title }} | BuildMart{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-detail { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 0.8fr); gap: 24px; }
+    .detail-card, .summary-card, .seller-card { background: rgba(255, 250, 243, 0.94); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 24px; box-shadow: 0 22px 44px rgba(49, 35, 18, 0.08); }
+    .detail-card { padding: 24px; }
+    .product-image { width: 100%; height: 420px; object-fit: cover; border-radius: 20px; background: #eadfcd; margin-bottom: 20px; }
+    .eyebrow, .meta-grid span, .summary-copy, .seller-card p { font-family: "Segoe UI", Tahoma, sans-serif; }
+    .eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.74rem; color: #a76027; font-weight: 700; }
+    .detail-card h1 { font-size: clamp(2rem, 3vw, 3.3rem); margin: 10px 0 14px; color: #23211d; }
+    .meta-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .meta-grid div { background: #fff; border-radius: 16px; padding: 14px; border: 1px solid rgba(67, 49, 22, 0.08); }
+    .meta-grid strong { display: block; color: #23211d; margin-top: 6px; }
+    .product-price { font-size: 2rem; font-weight: 700; color: #2d553d; margin-bottom: 18px; }
+    .description { font-family: "Segoe UI", Tahoma, sans-serif; color: #665d52; line-height: 1.7; }
+    .detail-sidebar { display: grid; gap: 18px; align-content: start; }
+    .summary-card, .seller-card { padding: 20px; }
+    .summary-card h3, .seller-card h3 { margin-bottom: 12px; color: #23211d; }
+    .summary-copy { color: #665d52; line-height: 1.6; margin-bottom: 16px; }
+    .quantity-row { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; }
+    .quantity-row input { width: 90px; padding: 10px; border-radius: 12px; border: 1px solid rgba(67, 49, 22, 0.14); }
+    .stack-actions { display: grid; gap: 10px; }
+    .secondary-link { text-decoration: none; color: #6d4c2d; font-family: "Segoe UI", Tahoma, sans-serif; font-weight: 700; }
+    @media (max-width: 920px) { .product-detail { grid-template-columns: 1fr; } .meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px) { .meta-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:16px;">
+    <a href="{% url 'advertisement-list' %}" class="secondary-link">Back to products</a>
+</div>
+
+<section class="product-detail">
+    <article class="detail-card">
+        {% if advertisement.image %}
+            <img class="product-image" src="{{ advertisement.image.url }}" alt="{{ advertisement.title }}">
+        {% endif %}
+
+        <span class="eyebrow">{{ advertisement.category.name|default:"Construction Material" }}</span>
+        <h1>{{ advertisement.title }}</h1>
+        <div class="product-price">${{ advertisement.price|floatformat:2 }}</div>
+
+        <div class="meta-grid">
+            <div><span>Status</span><strong>{{ advertisement.get_status_display }}</strong></div>
+            <div><span>Location</span><strong>{{ advertisement.city }}</strong></div>
+            <div><span>Available</span><strong>{{ advertisement.stock_quantity }}</strong></div>
+            <div><span>Added</span><strong>{{ advertisement.created_at|date:"M d, Y" }}</strong></div>
+            <div><span>Views</span><strong>{{ advertisement.views }}</strong></div>
+        </div>
+
+        <div class="description">
+            <h3>Product Description</h3>
+            {{ advertisement.description|linebreaks }}
+        </div>
+    </article>
+
+    <aside class="detail-sidebar">
+        <div class="summary-card">
+            <h3>Order This Product</h3>
+            <p class="summary-copy">Add this construction material to your cart and continue shopping, or open your cart to review quantities before checkout.</p>
+
+            {% if user.is_authenticated %}
+                <div class="quantity-row">
+                    <label for="quantity">Qty</label>
+                    <input type="number" id="quantity" value="1" min="1" max="{{ advertisement.stock_quantity }}">
+                </div>
+                <p class="summary-copy">Available now: {{ advertisement.stock_quantity }} item{{ advertisement.stock_quantity|pluralize }}.</p>
+                <div class="stack-actions">
+                    <button id="add-to-cart-btn" class="btn">Add to Cart</button>
+                    <a href="{% url 'cart' %}" class="btn" style="background:#2f3b34;">View Cart</a>
+                </div>
+            {% else %}
+                <div class="stack-actions">
+                    <a href="{% url 'login' %}" class="btn">Login to Add to Cart</a>
+                    <a href="{% url 'signup' %}" class="btn" style="background:#2f3b34;">Create Account</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="seller-card">
+            <h3>Supplier Details</h3>
+            <p><strong>Supplier:</strong> {{ advertisement.user.get_full_name|default:advertisement.user.username }}</p>
+            <p><strong>Email:</strong> {{ advertisement.user.email|default:"Available to logged-in staff" }}</p>
+            <p><strong>Category:</strong> {{ advertisement.category.name|default:"Construction Material" }}</p>
+        </div>
+
+        {% if user.is_staff %}
+            <div class="summary-card">
+                <h3>Staff Actions</h3>
+                <div class="stack-actions">
+                    <a href="{% url 'advertisement-update' advertisement.slug %}" class="btn">Edit Product</a>
+                    <a href="{% url 'advertisement-delete' advertisement.slug %}" class="btn" style="background:#8f3b32;">Delete Product</a>
+                </div>
+            </div>
+        {% endif %}
+    </aside>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function showNotification(message, isError) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${isError ? '#8f3b32' : '#2d553d'};
+        color: white;
+        padding: 12px 18px;
+        border-radius: 12px;
+        z-index: 10000;
+        font-weight: 600;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2500);
+}
+
+const addToCartBtn = document.getElementById('add-to-cart-btn');
+const quantityInput = document.getElementById('quantity');
+
+if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', async () => {
+        const quantity = parseInt(quantityInput.value, 10);
+        if (!quantity || quantity < 1) {
+            showNotification('Enter a valid quantity.', true);
+            return;
+        }
+
+        const res = await fetch('{% url "add-to-cart" advertisement.slug %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}' || getCookie('csrftoken'),
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            },
+            body: `quantity=${quantity}`
+        });
+
+        if (res.ok) {
+            showNotification('Product added to cart.');
+        } else {
+            const data = await res.json();
+            showNotification(data.error || 'Unable to add product to cart.', true);
+        }
+    });
+}
+</script>
+{% endblock %}

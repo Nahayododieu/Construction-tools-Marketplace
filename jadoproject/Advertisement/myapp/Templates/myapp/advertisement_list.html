@@ -1,0 +1,131 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Products | BuildMart{% endblock %}
+
+{% block extra_css %}
+<style>
+    .catalog-shell { display: grid; gap: 24px; }
+    .catalog-hero, .filter-panel, .empty-state { background: rgba(255, 250, 243, 0.92); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 24px; box-shadow: 0 20px 42px rgba(49, 35, 18, 0.08); }
+    .catalog-hero { display: flex; justify-content: space-between; gap: 20px; padding: 28px; align-items: center; }
+    .catalog-hero h1 { font-size: clamp(2rem, 3vw, 3rem); margin-bottom: 10px; color: #23211d; }
+    .catalog-hero p, .filter-panel label, .product-meta, .product-description, .product-location, .empty-state p { font-family: "Segoe UI", Tahoma, sans-serif; color: #665d52; }
+    .filter-panel { padding: 20px; }
+    .filter-form { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: end; }
+    .filter-field label { display: block; font-weight: 700; margin-bottom: 6px; }
+    .filter-field input, .filter-field select { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(67, 49, 22, 0.16); background: #fff; }
+    .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .product-card { background: #fff; border-radius: 22px; overflow: hidden; border: 1px solid rgba(67, 49, 22, 0.10); box-shadow: 0 18px 34px rgba(49, 35, 18, 0.07); display: flex; flex-direction: column; }
+    .product-media { height: 220px; background: linear-gradient(180deg, #efe4d4, #e2d3bf); position: relative; }
+    .product-media img { width: 100%; height: 100%; object-fit: cover; }
+    .product-badge { position: absolute; top: 14px; right: 14px; padding: 8px 12px; border-radius: 999px; background: rgba(36, 48, 40, 0.88); color: #fff; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .product-body { padding: 18px; display: grid; gap: 10px; flex: 1; }
+    .product-category { color: #a76027; font-family: "Segoe UI", Tahoma, sans-serif; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .product-title { color: #23211d; text-decoration: none; font-size: 1.2rem; font-weight: 700; }
+    .product-price { font-size: 1.4rem; font-weight: 700; color: #2d553d; }
+    .product-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; font-family: "Segoe UI", Tahoma, sans-serif; }
+    .pagination a, .pagination span { background: #fff; border: 1px solid rgba(67, 49, 22, 0.12); border-radius: 999px; padding: 10px 16px; text-decoration: none; }
+    .empty-state { padding: 28px; text-align: center; }
+    @media (max-width: 920px) { .filter-form { grid-template-columns: 1fr; } .catalog-hero { flex-direction: column; align-items: flex-start; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="catalog-shell">
+    <div class="catalog-hero">
+        <div>
+            <h1>Construction Materials Catalog</h1>
+            <p>Browse the BuildMart prototype like a real online store. Visitors can explore products, customers can register and add items to their cart, and staff can manage the catalog from the admin area.</p>
+        </div>
+        {% if user.is_staff %}
+            <a href="{% url 'advertisement-create' %}" class="btn">Add Product</a>
+        {% elif not user.is_authenticated %}
+            <a href="{% url 'signup' %}" class="btn">Create Account</a>
+        {% else %}
+            <a href="{% url 'cart' %}" class="btn">Open Cart</a>
+        {% endif %}
+    </div>
+
+    <div class="filter-panel">
+        <form method="get" class="filter-form">
+            <div class="filter-field">
+                <label for="search">Search Products</label>
+                <input id="search" type="text" name="search" value="{{ request.GET.search }}" placeholder="Cement, bricks, pipes, roofing sheets..." />
+            </div>
+            <div class="filter-field">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% if user.is_staff %}
+                <div class="filter-field">
+                    <label for="status">Status</label>
+                    <select id="status" name="status">
+                        <option value="">All statuses</option>
+                        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="sold" {% if request.GET.status == 'sold' %}selected{% endif %}>Sold</option>
+                        <option value="expired" {% if request.GET.status == 'expired' %}selected{% endif %}>Expired</option>
+                    </select>
+                </div>
+            {% endif %}
+            <div class="filter-actions">
+                <button type="submit" class="btn">Filter</button>
+                <a href="{% url 'advertisement-list' %}" class="btn" style="background:#2f3b34;">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    {% if advertisements %}
+        <div class="product-grid">
+            {% for ad in advertisements %}
+                <article class="product-card">
+                    <div class="product-media">
+                        {% if ad.image %}
+                            <img src="{{ ad.image.url }}" alt="{{ ad.title }}">
+                        {% endif %}
+                        <span class="product-badge">{{ ad.get_status_display }}</span>
+                    </div>
+                    <div class="product-body">
+                        <span class="product-category">{{ ad.category.name|default:"Construction Material" }}</span>
+                        <a class="product-title" href="{% url 'advertisement-detail' ad.slug %}">{{ ad.title }}</a>
+                        <p class="product-description">{{ ad.description|truncatewords:18 }}</p>
+                        <div class="product-meta">
+                            <span class="product-location">{{ ad.city }}</span>
+                        </div>
+                        <div class="product-price">${{ ad.price|floatformat:2 }}</div>
+                        <div class="product-actions">
+                            <a href="{% url 'advertisement-detail' ad.slug %}" class="btn">View Details</a>
+                            {% if user.is_staff %}
+                                <a href="{% url 'advertisement-update' ad.slug %}" class="btn" style="background:#2f3b34;">Edit</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&search={{ request.GET.search }}&category={{ request.GET.category }}&status={{ request.GET.status }}">Previous</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&search={{ request.GET.search }}&category={{ request.GET.category }}&status={{ request.GET.status }}">Next</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <h2>No products matched your search</h2>
+            <p>Try a different category or search term, or ask staff to add more construction materials to the catalog.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

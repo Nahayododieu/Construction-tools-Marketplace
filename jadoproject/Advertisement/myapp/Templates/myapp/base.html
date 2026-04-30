@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BuildMart Materials{% endblock %}</title>
+    <style>
+        :root {
+            --bg: #f4efe7;
+            --surface: #fffaf3;
+            --surface-strong: #ffffff;
+            --ink: #1f1f1f;
+            --muted: #6e6558;
+            --line: rgba(67, 49, 22, 0.12);
+            --brand: #d9712b;
+            --brand-deep: #ba5d1c;
+            --charcoal: #2a2f33;
+            --container: 1240px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: Georgia, "Times New Roman", serif;
+            background:
+                radial-gradient(circle at top left, rgba(217, 113, 43, 0.12), transparent 28%),
+                linear-gradient(180deg, #f8f3eb 0%, #f3ede3 48%, #efe7da 100%);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        a { color: inherit; }
+
+        .site-shell { min-height: 100vh; display: flex; flex-direction: column; }
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            backdrop-filter: blur(18px);
+            background: rgba(255, 250, 243, 0.88);
+            border-bottom: 1px solid var(--line);
+        }
+
+        .header-inner {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 18px 20px;
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr) auto;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .brand-mark { text-decoration: none; display: inline-flex; flex-direction: column; gap: 2px; }
+        .brand-title { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.04em; color: var(--charcoal); }
+        .brand-title span { color: var(--brand); }
+        .brand-subtitle {
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .header-search {
+            display: grid;
+            grid-template-columns: 180px minmax(0, 1fr) auto;
+            align-items: center;
+            background: var(--surface-strong);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .search-select,
+        .search-input {
+            border: 0;
+            background: transparent;
+            padding: 15px 18px;
+            font-size: 0.95rem;
+            color: var(--ink);
+            outline: none;
+        }
+
+        .search-select { border-right: 1px solid var(--line); appearance: none; }
+        .search-input { width: 100%; font-family: "Segoe UI", Tahoma, sans-serif; }
+        .search-button { border: 0; background: var(--brand); color: #fff; padding: 15px 22px; font-weight: 600; cursor: pointer; }
+        .search-button:hover { background: var(--brand-deep); }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            flex-wrap: wrap;
+        }
+
+        .utility-link,
+        .header-button {
+            text-decoration: none;
+            border-radius: 999px;
+            padding: 11px 16px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.7);
+            font-size: 0.92rem;
+        }
+
+        .header-button.primary { background: var(--charcoal); color: #fff; border-color: transparent; }
+        .header-button.accent { background: var(--brand); color: #fff; border-color: transparent; }
+        .user-pill { display: inline-flex; align-items: center; padding: 10px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+
+        .subnav { border-top: 1px solid rgba(67, 49, 22, 0.08); background: rgba(48, 67, 55, 0.04); }
+        .subnav-inner {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 12px 20px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        .subnav-inner a {
+            text-decoration: none;
+            color: var(--muted);
+            font-size: 0.93rem;
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 30px 20px 0;
+            flex: 1;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 999px;
+            border: none;
+            background: var(--brand);
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            font-weight: 600;
+        }
+
+        .message-list { list-style: none; display: grid; gap: 10px; margin-bottom: 18px; }
+        .message-list li { padding: 12px 14px; border-radius: 12px; font-family: "Segoe UI", Tahoma, sans-serif; }
+        .message-list .success { background: #e8f5ec; color: #29543a; }
+        .message-list .error { background: #fdecec; color: #8b2f2f; }
+        .message-list .warning { background: #fff5e5; color: #8a5b17; }
+        .message-list .info { background: #eef5ff; color: #24507a; }
+
+        .site-footer { margin-top: 48px; border-top: 1px solid var(--line); background: #2c2d2a; color: rgba(255, 255, 255, 0.82); }
+        .footer-inner {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: 26px 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 1100px) {
+            .header-inner { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 720px) {
+            .header-search { grid-template-columns: 1fr; border-radius: 20px; }
+            .search-select { border-right: 0; border-bottom: 1px solid var(--line); }
+            .search-button { width: 100%; }
+            .container { padding-top: 22px; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="site-shell">
+        <header class="site-header">
+            <div class="header-inner">
+                <a class="brand-mark" href="{% url 'landing' %}">
+                    <span class="brand-title">Build<span>Mart</span></span>
+                    <span class="brand-subtitle">Construction Materials Marketplace</span>
+                </a>
+
+                <form class="header-search" action="{% url 'advertisement-list' %}" method="get">
+                    <select class="search-select" name="category">
+                        <option value="">All materials</option>
+                        {% for category in navigation_categories %}
+                            <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input class="search-input" type="text" name="search" value="{{ request.GET.search }}" placeholder="Search for cement, tiles, roofing sheets, plumbing fittings..." />
+                    <button class="search-button" type="submit">Search</button>
+                </form>
+
+                <div class="header-actions">
+                    <a class="utility-link" href="{% url 'landing' %}">Home</a>
+                    <a class="utility-link" href="{% url 'advertisement-list' %}">Products</a>
+                    <a class="utility-link" href="{% url 'category-list' %}">Categories</a>
+                    {% if user.is_authenticated %}
+                        <a class="utility-link" href="{% url 'cart' %}">Cart</a>
+                        <span class="user-pill"><strong>{{ user.username }}</strong></span>
+                        <a class="header-button primary" href="{% url 'user-dashboard' %}">Dashboard</a>
+                        {% if user.is_staff %}
+                            <a class="header-button accent" href="{% url 'advertisement-create' %}">Add Product</a>
+                            <a class="header-button" href="{% url 'admin-dashboard' %}">Admin Panel</a>
+                        {% endif %}
+                        <a class="header-button" href="{% url 'user-logout' %}">Logout</a>
+                    {% else %}
+                        <a class="header-button" href="{% url 'login' %}">Login</a>
+                        <a class="header-button accent" href="{% url 'signup' %}">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="subnav">
+                <div class="subnav-inner">
+                    <a href="{% url 'landing' %}">Featured materials</a>
+                    <a href="{% url 'advertisement-list' %}">All products</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'user-profile' %}">My profile</a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin-dashboard' %}">Admin dashboard</a>
+                            <a href="{% url 'admin-ads' %}">Manage products</a>
+                            <a href="{% url 'admin-users' %}">Manage users</a>
+                            <a href="{% url 'user-signups' %}">Customers</a>
+                            <a href="/admin/">Django admin</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'signup' %}">Create customer account</a>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            {% if messages %}
+                <ul class="message-list">
+                    {% for message in messages %}
+                        <li class="{{ message.tags|default:'info' }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-inner">
+                <p>&copy; 2026 BuildMart Materials. Powered by Jetz Technology.</p>
+                <p>BuildMart connects builders, suppliers, and buyers with materials for residential and commercial projects.</p>
+            </div>
+        </footer>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}Cancel Order | BuildMart{% endblock %}
+
+{% block content %}
+<div style="max-width: 760px; margin: 3rem auto; padding: 2rem; background: rgba(255, 250, 243, 0.96); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 24px; box-shadow: 0 22px 44px rgba(49, 35, 18, 0.08);">
+    <h1 style="margin-bottom: 0.75rem; color: #23211d;">Cancel Order</h1>
+    <p style="margin-bottom: 1.5rem; color: #665d52; font-family: 'Segoe UI', Tahoma, sans-serif;">
+        You are cancelling your order for <strong>{{ order.advertisement.title }}</strong>. If you want, you can tell us why so we can improve. This is optional.
+    </p>
+
+    <div style="margin-bottom: 1.5rem; padding: 1rem 1.2rem; background: white; border-radius: 16px; border: 1px solid rgba(67, 49, 22, 0.10);">
+        <p style="margin: 0 0 0.4rem;"><strong>Order ID:</strong> #{{ order.id }}</p>
+        <p style="margin: 0 0 0.4rem;"><strong>Product:</strong> {{ order.advertisement.title }}</p>
+        <p style="margin: 0 0 0.4rem;"><strong>Quantity:</strong> {{ order.quantity }}</p>
+        <p style="margin: 0;"><strong>Status:</strong> {{ order.get_status_display }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="{{ form.cancellation_reason.id_for_label }}" style="display:block; margin-bottom:0.5rem; font-weight:700; color:#23211d;">
+            {{ form.cancellation_reason.label }}
+        </label>
+        {{ form.cancellation_reason }}
+        {% if form.cancellation_reason.errors %}
+            <div style="margin-top: 0.5rem; color: #8f3b32;">{{ form.cancellation_reason.errors|join:", " }}</div>
+        {% endif %}
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:1.5rem;">
+            <button type="submit" class="btn" style="background:#8f3b32;">Confirm Cancellation</button>
+            <a href="{% url 'user-dashboard' %}" class="btn" style="background:#2f3b34;">Keep Order</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    textarea {
+        width: 100%;
+        min-height: 130px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid rgba(67, 49, 22, 0.16);
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        resize: vertical;
+    }
+</style>
+{% endblock %}

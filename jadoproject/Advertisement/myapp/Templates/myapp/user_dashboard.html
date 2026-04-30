@@ -1,0 +1,98 @@
+{% extends 'myapp/base.html' %}
+
+{% block title %}My Dashboard | BuildMart{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-shell { display: grid; gap: 22px; }
+    .hero, .panel, .stat-card { background: rgba(255, 250, 243, 0.94); border: 1px solid rgba(67, 49, 22, 0.10); border-radius: 24px; box-shadow: 0 22px 44px rgba(49, 35, 18, 0.08); }
+    .hero, .panel { padding: 24px; }
+    .hero h1 { font-size: clamp(2rem, 3vw, 3rem); color: #23211d; margin-bottom: 10px; }
+    .hero p, .stat-label, .meta-copy { font-family: "Segoe UI", Tahoma, sans-serif; color: #665d52; }
+    .actions, .stats-grid, .two-col { display: grid; gap: 16px; }
+    .actions { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .stats-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .stat-card { padding: 18px; text-align: center; }
+    .stat-number { display: block; font-size: 2rem; font-weight: 700; color: #23211d; }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .list-item { padding: 14px 0; border-bottom: 1px solid rgba(67, 49, 22, 0.10); }
+    .list-item:last-child { border-bottom: 0; }
+    .item-title { font-weight: 700; color: #23211d; margin-bottom: 4px; }
+    .item-actions { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .muted-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        font-weight: 600;
+        background: #f0e5d6;
+        color: #6d4c2d;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #efe7da;
+        color: #5c4a36;
+    }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+
+<section class="dashboard-shell">
+    <div class="hero">
+        <h1>Welcome back, {{ user.first_name|default:user.username }}.</h1>
+        <p>Your customer dashboard keeps the BuildMart shopping flow simple: browse products, manage your cart, and review your recent orders.</p>
+        <div class="actions">
+            <a href="{% url 'advertisement-list' %}" class="btn">Browse Products</a>
+            <a href="{% url 'cart' %}" class="btn" style="background:#2f3b34;">Open Cart</a>
+            <a href="{% url 'user-profile' %}" class="btn" style="background:#5f6b63;">My Profile</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><span class="stat-number">{{ recent_orders|length }}</span><span class="stat-label">Recent Orders</span></div>
+        <div class="stat-card"><span class="stat-number">{{ cart_items_count }}</span><span class="stat-label">Items In Cart</span></div>
+        <div class="stat-card"><span class="stat-number">{{ user_shares|length }}</span><span class="stat-label">Shared Products</span></div>
+        <div class="stat-card"><span class="stat-number">{{ user_reports|length }}</span><span class="stat-label">Support Reports</span></div>
+    </div>
+
+    <div class="two-col">
+        <div class="panel">
+            <h2 style="margin-bottom:16px;">Recent Orders</h2>
+            {% for order in recent_orders %}
+                <div class="list-item">
+                    <div class="item-title">{{ order.advertisement.title }}</div>
+                    <div class="meta-copy">Quantity {{ order.quantity }} | {{ order.get_status_display }} | {{ order.created_at|date:"M d, Y" }}</div>
+                    <div class="item-actions">
+                        {% if order.status != 'cancelled' %}
+                            <a href="{% url 'cancel-order' order.pk %}" class="muted-button">Cancel Order</a>
+                        {% else %}
+                            <span class="status-pill">Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <p class="meta-copy">You have not placed any orders yet.</p>
+            {% endfor %}
+        </div>
+
+        <div class="panel">
+            <h2 style="margin-bottom:16px;">Recent Activity</h2>
+            {% for share in user_shares %}
+                <div class="list-item">
+                    <div class="item-title">{{ share.advertisement.title }}</div>
+                    <div class="meta-copy">Shared via {{ share.get_share_method_display }} on {{ share.shared_at|date:"M d, Y" }}</div>
+                </div>
+            {% empty %}
+                <p class="meta-copy">Your recent shopping activity will appear here.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
